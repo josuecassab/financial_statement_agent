@@ -1,81 +1,56 @@
-import json
 from typing import Any
 
-SUB_AGENTS = frozenset({"nubank_agent", "bancolombia_agent"})
+ROUTE_TO_AGENT = {
+    "nubank": "nubank_agent",
+    "bancolombia": "bancolombia_agent",
+    "otro_banco": "generic_agent",
+}
+NOT_STATEMENT_MESSAGE = "No es un extracto bancario"
+VALIDATION_OK_PREFIX = "los movimientos concuerdan con el saldo"
+VALIDATION_FAILED_PREFIX = "los movimientos no concuerdan con el saldo"
 
 
-def _event_text(event: dict[str, Any]) -> str | None:
-    for part in event.get("content", {}).get("parts", []):
-        if "text" in part:
-            return part["text"]
+def _final_payload(events: list[dict[str, Any]]) -> dict[str, Any] | None:
+    for event in reversed(events):
+        output = event.get("output")
+        if isinstance(output, dict) and "data" in output and "message" in output:
+            return output
     return None
-
-
-def _transfer_target(event: dict[str, Any]) -> str | None:
-    for part in event.get("content", {}).get("parts", []):
-        fc = part.get("functionCall") or {}
-        if fc.get("name") == "transfer_to_agent":
-            return (fc.get("args") or {}).get("agent_name")
-    return None
-
-
-def _parse_json_text(text: str) -> Any | None:
-    text = text.strip()
-    if text.startswith("```"):
-        text = text.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        return None
 
 
 def parse_run_response(data: list[dict[str, Any]]) -> dict[str, Any]:
     """Classify an ADK /run response as success, rejection, or parse error."""
-    transferred_to = None
-    for event in data:
-        target = _transfer_target(event)
-        if target:
-            transferred_to = target
+    payload = _final_payload(data)
+    if payload is None:
+        return {"status": "error", "reason": "empty_response"}
 
-    for event in reversed(data):
-        author = event.get("author")
-        if author not in SUB_AGENTS:
-            continue
-        text = _event_text(event)
-        if text is None:
-            continue
-        parsed = _parse_json_text(text)
-        if not isinstance(parsed, list):
-            return {
-                "status": "error",
-                "reason": "invalid_json",
-                "agent": author,
-                "transferred_to": transferred_to,
-            }
-        return {
-            "status": "success",
-            "agent": author,
-            "transferred_to": transferred_to,
-            "movements": parsed,
-        }
+    message = (payload.get("message") or "").strip()
+    statement = payload.get("data")
 
-    for event in reversed(data):
-        if event.get("author") != "root_agent":
-            continue
-        text = _event_text(event)
-        if text is None:
-            continue
-        parsed = _parse_json_text(text)
-        if isinstance(parsed, dict) and parsed.get("status") == "not_financial_statement":
-            return {
-                "status": "not_financial_statement",
-                "reason": parsed.get("reason", ""),
-                "transferred_to": transferred_to,
-            }
+    if statement is None or message.lower() == NOT_STATEMENT_MESSAGE.lower():
         return {
             "status": "not_financial_statement",
-            "reason": text,
-            "transferred_to": transferred_to,
+            "reason": message or NOT_STATEMENT_MESSAGE,
         }
 
-    return {"status": "error", "reason": "empty_response", "transferred_to": transferred_to}
+    if not isinstance(statement, dict) or not isinstance(statement.get("movimientos"), list):
+        return {"status": "error", "reason": "invalid_json"}
+
+    movements = statement["movimientos"]
+    banco = statement.get("banco")
+    agent = ROUTE_TO_AGENT.get(banco) if isinstance(banco, str) else None
+    result: dict[str, Any] = {
+        "agent": agent,
+        "movements": movements,
+        "message": message,
+    }
+    if banco is not None:
+        result["banco"] = banco
+
+    if message.startswith(VALIDATION_FAILED_PREFIX):
+        result.update({"status": "error", "reason": "validation_failed"})
+        return result
+
+    result["status"] = "success"
+    result["validated"] = message.startswith(VALIDATION_OK_PREFIX)
+    return result

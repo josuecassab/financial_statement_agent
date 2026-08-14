@@ -104,18 +104,22 @@ def process_pdf_statement(
 
     if parsed["status"] == "not_financial_statement":
         raise ValueError(parsed.get("reason") or "Document is not a financial statement.")
-    if parsed["status"] != "success":
-        raise RuntimeError(
-            f"Failed to parse agent response: {parsed.get('reason', 'unknown')}"
-        )
+    # if parsed["status"] != "success":
+    #     detail = parsed.get("message") or parsed.get("reason", "unknown")
+    #     raise RuntimeError(f"Failed to parse agent response: {detail}")
 
     agent_bank = {
         "nubank_agent": "nubank",
         "bancolombia_agent": "bancolombia",
+        "generic_agent": "otro_banco",
     }
-    bank = agent_bank.get(parsed["agent"], "unknown")
+    bank = (
+        parsed.get("banco")
+        or agent_bank.get(parsed.get("agent"), "unknown")
+    )
 
     df = pd.DataFrame(parsed["movements"])
+    df = df[["fecha", "descripcion", "valor"]].copy()
     df["valor"] = df["valor"].astype("float64")
     df["fecha"] = pd.to_datetime(df["fecha"])
     df["fecha"] = df["fecha"].dt.date

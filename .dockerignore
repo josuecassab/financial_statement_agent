@@ -1,0 +1,12 @@
+.git
+.github
+.adk
+.venv
+.env
+__pycache__
+*.pyc
+*.ipynb
+.DS_Store
+api_call.py
+parse_response.py
+env_var.sh

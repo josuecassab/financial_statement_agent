@@ -22,7 +22,6 @@ env:
   PROJECT_ID: pf-zerogasto-dev
   REGION: us-east1
   SERVICE_NAME: adk-financial-statement-agent
-  APP_NAME: financial_statement_agent
 
 jobs:
   deploy:
@@ -45,21 +44,13 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install ADK
-        run: pip install -r requirements.txt
-
-      - name: Deploy agent
+      - name: Deploy to Cloud Run
         env:
           ROOT_AGENT_MODEL: ${{ secrets.ROOT_AGENT_MODEL }}
           SUB_AGENTS_MODEL: ${{ secrets.SUB_AGENTS_MODEL }}
         run: |
-          # Cloud Run omits a revision when the image digest and config are
-          # identical. Stamp each deploy so a new revision is always created.
+          set -euo pipefail
+
           SHORT_SHA="$(echo "${GITHUB_SHA}" | cut -c1-7)"
           REVISION_SUFFIX="gha${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 
@@ -71,17 +62,33 @@ jobs:
             UPDATE_ENV="${UPDATE_ENV},SUB_AGENTS_MODEL=${SUB_AGENTS_MODEL}"
           fi
 
-          yes | adk deploy cloud_run \
+          gcloud run deploy "${SERVICE_NAME}" \
+            --source=. \
             --project="${PROJECT_ID}" \
             --region="${REGION}" \
-            --service_name="${SERVICE_NAME}" \
-            --app_name="${APP_NAME}" \
-            . \
-            -- \
             --quiet \
-            --allow-unauthenticated \
             --revision-suffix="${REVISION_SUFFIX}" \
             --update-env-vars="${UPDATE_ENV}" \
-            --labels="git-sha=${SHORT_SHA}"
+            --update-labels="git-sha=${SHORT_SHA},managed-by=github-actions"
 
-          echo "Deployed revision suffix ${REVISION_SUFFIX} (commit ${GITHUB_SHA})"
+          IMAGE="$(gcloud run services describe "${SERVICE_NAME}" \
+            --project="${PROJECT_ID}" \
+            --region="${REGION}" \
+            --format='value(spec.template.spec.containers[0].image)')"
+          REVISION="$(gcloud run services describe "${SERVICE_NAME}" \
+            --project="${PROJECT_ID}" \
+            --region="${REGION}" \
+            --format='value(status.latestReadyRevisionName)')"
+
+          echo "Image: ${IMAGE}"
+          echo "Revision: ${REVISION}"
+
+          case "${IMAGE}" in
+            *cloudrun/container/hello*)
+              echo "Deploy reported success but the service is still the Cloud Run sample image." >&2
+              exit 1
+              ;;
+          esac
+
+          echo "${REVISION}" | grep -q "${REVISION_SUFFIX}" \
+            || { echo "Expected revision suffix ${REVISION_SUFFIX}, got ${REVISION}" >&2; exit 1; }

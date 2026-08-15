@@ -58,7 +58,12 @@ jobs:
           ROOT_AGENT_MODEL: ${{ secrets.ROOT_AGENT_MODEL }}
           SUB_AGENTS_MODEL: ${{ secrets.SUB_AGENTS_MODEL }}
         run: |
-          UPDATE_ENV="GOOGLE_CLOUD_PROJECT=${PROJECT_ID},GOOGLE_CLOUD_LOCATION=${REGION},GOOGLE_GENAI_USE_VERTEXAI=TRUE"
+          # Cloud Run omits a revision when the image digest and config are
+          # identical. Stamp each deploy so a new revision is always created.
+          SHORT_SHA="$(echo "${GITHUB_SHA}" | cut -c1-7)"
+          REVISION_SUFFIX="gha${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          UPDATE_ENV="GOOGLE_CLOUD_PROJECT=${PROJECT_ID},GOOGLE_CLOUD_LOCATION=${REGION},GOOGLE_GENAI_USE_VERTEXAI=TRUE,GIT_SHA=${GITHUB_SHA}"
           if [ -n "${ROOT_AGENT_MODEL}" ]; then
             UPDATE_ENV="${UPDATE_ENV},ROOT_AGENT_MODEL=${ROOT_AGENT_MODEL}"
           fi
@@ -74,4 +79,9 @@ jobs:
             . \
             -- \
             --quiet \
-            --update-env-vars="${UPDATE_ENV}"
+            --allow-unauthenticated \
+            --revision-suffix="${REVISION_SUFFIX}" \
+            --update-env-vars="${UPDATE_ENV}" \
+            --labels="git-sha=${SHORT_SHA}"
+
+          echo "Deployed revision suffix ${REVISION_SUFFIX} (commit ${GITHUB_SHA})"

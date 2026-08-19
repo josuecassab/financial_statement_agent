@@ -1,4 +1,5 @@
 import os
+import json
 
 from google.adk.agents import Agent, LlmAgent
 from google.adk import Workflow
@@ -7,9 +8,12 @@ from google.adk.workflow import node
 from google.genai import types
 from pydantic import BaseModel, Field
 
+from pathlib import Path
 
 ROOT_AGENT_MODEL = os.getenv("ROOT_AGENT_MODEL")
 SUB_AGENTS_MODEL = os.getenv("SUB_AGENTS_MODEL")
+ROOT_PATH = Path(__file__).parent
+BANK_CODES_PATH = ROOT_PATH / "entidades.json"
 
 
 class Movimientos(BaseModel):
@@ -23,7 +27,6 @@ class BankStatement(BaseModel):
     )
     saldo_anterior: float = Field(description="Saldo anterior del extracto")
     saldo_actual: float = Field(description="Saldo actual del extracto")
-    banco: str = Field(description="El banco del extracto")
 
 class GenericSchema(BaseModel):
     movimientos: list[Movimientos] = Field(
@@ -31,7 +34,10 @@ class GenericSchema(BaseModel):
     )
     saldo_anterior: float = Field(description="Saldo anterior del extracto")
     saldo_actual: float = Field(description="Saldo actual del extracto")
-    banco: str = Field(description="El banco del extracto")
+
+def get_bank_codes() -> list[dict]:
+    with open(BANK_CODES_PATH, "r") as f:
+        return json.load(f)
 
 @node
 def statement_validation_function(node_input: BankStatement) -> bool:
@@ -54,7 +60,7 @@ no se te olvide la última transacción llamada 'Rendimiento total de tu cuenta'
 Convertir la fecha en formato yyyy-mm-dd.
 Ejemplo:
 {"movimientos": [{"fecha": "2024-06-15", "descripcion": "...", "valor": 0.0, "saldo": 0.0}],
-"saldo_anterior": 0.0, "saldo_actual": 0.0, "banco": "nubank"}
+"saldo_anterior": 0.0, "saldo_actual": 0.0}
 """,
     model=SUB_AGENTS_MODEL,
     output_schema=BankStatement,
@@ -68,7 +74,7 @@ movimientos (fecha yyyy-mm-dd, descripcion, valor, saldo), saldo_anterior y sald
 Lee el PDF del contexto y extrae las columnas equivalentes a Fecha, Descripción, Valor y Saldo.
 Ejemplo:
 {"movimientos": [{"fecha": "2024-06-15", "descripcion": "...", "valor": 0.0, "saldo": 0.0}],
-"saldo_anterior": 0.0, "saldo_actual": 0.0, "banco": "bancolombia"}
+"saldo_anterior": 0.0, "saldo_actual": 0.0}
 """,
     model=SUB_AGENTS_MODEL,
     output_schema=BankStatement,
@@ -84,7 +90,7 @@ También agrega el saldo actual y el saldo anterior. Si no hay saldo anterior, a
 Convertir la fecha en formato yyyy-mm-dd.
 Ejemplo:
 {"movimientos": [{"fecha": "2024-06-15", "descripcion": "...", "valor": 0.0, "saldo": 0.0}],
-"saldo_anterior": 0.0, "saldo_actual": 0.0, "banco": "El nombre del banco"}
+x"saldo_anterior": 0.0, "saldo_actual": 0.0}
 """,
     model=SUB_AGENTS_MODEL,
     output_schema=GenericSchema,
@@ -95,29 +101,44 @@ routing_agent = LlmAgent(
     description="Identifica el tipo de documento y decide si es un extracto bancario de Nubank, Bancolombia o otro banco",
     instruction="""
 Identifica el tipo de documento y decide si es un extracto bancario de Nubank, Bancolombia o otro banco.
-Si es un extracto bancario de Nubank, responde con "nubank".
-Si es un extracto bancario de Bancolombia, responde con "bancolombia".
-Si es un extracto bancario de otro banco, responde con "otro_banco".
-Si es una plataforma fintech o billetera digital, responde con "otro_banco".
-Si no es un extracto bancario, responde con "no_bancario".
+usa la herramienta get_bank_codes para obtener la lista de entidades bancarias.
+responde con el condigo y la denominación social de la entidad bancaria.
+Si es una plataforma fintech o billetera digital, responde con (0, "otro_banco").
+Si no es un extracto bancario, responde con (0, "no_bancario").
+Ejemplo:
+(1, "Banco de Bogotá S.A.")
 """,
-    output_schema=str,
+    output_schema=tuple[int, str],
     model=ROOT_AGENT_MODEL,
+    tools=[get_bank_codes],
 )
+
+def _statement_payload(statement, *, code: int, bank_name: str) -> dict:
+    data = statement.model_dump() if hasattr(statement, "model_dump") else dict(statement)
+    data["codigo"] = code
+    data["banco"] = bank_name
+    return data
+
 
 @node(rerun_on_resume=True)
 async def code_workflow(ctx: Context, node_input: types.Content):
     # Must accept Content (not str) so PDF/inline_data is not stripped by ADK.
-    bank_agent = await ctx.run_node(routing_agent, node_input)
-    if bank_agent == "nubank":
+    code, bank_name = await ctx.run_node(routing_agent, node_input)
+    if code == 128:
         data = await ctx.run_node(nubank_agent, node_input)
         validation_result = await ctx.run_node(statement_validation_function, data)
-        return {"data": data, "message": "los movimientos concuerdan con el saldo" if validation_result else "los movimientos no concuerdan con el saldo"}
-    elif bank_agent == "bancolombia":
+        return {
+            "data": _statement_payload(data, code=code, bank_name=bank_name),
+            "message": "los movimientos concuerdan con el saldo" if validation_result else "los movimientos no concuerdan con el saldo",
+        }
+    elif code == 7:
         bancolombia_statement = await ctx.run_node(bancolombia_agent, node_input)
         validation_result = await ctx.run_node(statement_validation_function, bancolombia_statement)
-        return {"data": bancolombia_statement, "message": "los movimientos concuerdan con el saldo" if validation_result else "los movimientos no concuerdan con el saldo"}
-    elif bank_agent == "otro_banco":
+        return {
+            "data": _statement_payload(bancolombia_statement, code=code, bank_name=bank_name),
+            "message": "los movimientos concuerdan con el saldo" if validation_result else "los movimientos no concuerdan con el saldo",
+        }
+    elif code not in [0, 128, 7]:
         cnt = 0
         validation_result = False
         while not validation_result and cnt < 2:
@@ -125,7 +146,10 @@ async def code_workflow(ctx: Context, node_input: types.Content):
             validation_result = await ctx.run_node(statement_validation_function, generic_statement)
             cnt += 1
 
-        return {"data": generic_statement, "message": "los movimientos concuerdan con el saldo" if validation_result else f"los movimientos no concuerdan con el saldo, se intentó {cnt} veces"}
+        return {
+            "data": _statement_payload(generic_statement, code=code, bank_name=bank_name),
+            "message": "los movimientos concuerdan con el saldo" if validation_result else f"los movimientos no concuerdan con el saldo, se intentó {cnt} veces",
+        }
     else:
         return {"data": None, "message": "No es un extracto bancario"}
 

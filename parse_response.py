@@ -5,6 +5,10 @@ ROUTE_TO_AGENT = {
     "bancolombia": "bancolombia_agent",
     "otro_banco": "generic_agent",
 }
+CODE_TO_AGENT = {
+    128: "nubank_agent",
+    7: "bancolombia_agent",
+}
 NOT_STATEMENT_MESSAGE = "No es un extracto bancario"
 VALIDATION_OK_PREFIX = "los movimientos concuerdan con el saldo"
 VALIDATION_FAILED_PREFIX = "los movimientos no concuerdan con el saldo"
@@ -38,7 +42,10 @@ def parse_run_response(data: list[dict[str, Any]]) -> dict[str, Any]:
 
     movements = statement["movimientos"]
     banco = statement.get("banco")
-    agent = ROUTE_TO_AGENT.get(banco) if isinstance(banco, str) else None
+    codigo = statement.get("codigo")
+    agent = CODE_TO_AGENT.get(codigo)
+    if agent is None and isinstance(banco, str):
+        agent = ROUTE_TO_AGENT.get(banco)
     result: dict[str, Any] = {
         "agent": agent,
         "movements": movements,
@@ -46,6 +53,8 @@ def parse_run_response(data: list[dict[str, Any]]) -> dict[str, Any]:
     }
     if banco is not None:
         result["banco"] = banco
+    if codigo is not None:
+        result["codigo"] = codigo
 
     if message.startswith(VALIDATION_FAILED_PREFIX):
         result.update({"status": "error", "reason": "validation_failed"})

@@ -1,17 +1,9 @@
 from typing import Any
 
-ROUTE_TO_AGENT = {
-    "nubank": "nubank_agent",
-    "bancolombia": "bancolombia_agent",
-    "otro_banco": "generic_agent",
-}
-CODE_TO_AGENT = {
-    128: "nubank_agent",
-    7: "bancolombia_agent",
-}
 NOT_STATEMENT_MESSAGE = "No es un extracto bancario"
 VALIDATION_OK_PREFIX = "los movimientos concuerdan con el saldo"
 VALIDATION_FAILED_PREFIX = "los movimientos no concuerdan con el saldo"
+NOT_VALIDATED_PREFIX = "plataforma fintech o billetera digital los saldos no se validaron"
 
 
 def _final_payload(events: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -43,11 +35,7 @@ def parse_run_response(data: list[dict[str, Any]]) -> dict[str, Any]:
     movements = statement["movimientos"]
     banco = statement.get("banco")
     codigo = statement.get("codigo")
-    agent = CODE_TO_AGENT.get(codigo)
-    if agent is None and isinstance(banco, str):
-        agent = ROUTE_TO_AGENT.get(banco)
     result: dict[str, Any] = {
-        "agent": agent,
         "movements": movements,
         "message": message,
     }
@@ -56,8 +44,13 @@ def parse_run_response(data: list[dict[str, Any]]) -> dict[str, Any]:
     if codigo is not None:
         result["codigo"] = codigo
 
-    if message.startswith(VALIDATION_FAILED_PREFIX):
-        result.update({"status": "error", "reason": "validation_failed"})
+    if codigo != 0 and message.startswith(VALIDATION_FAILED_PREFIX):
+        result.update({"status": "error", "reason": message or "validation_failed"})
+        return result
+
+    if codigo == 0:
+        result["status"] = "success"
+        result["validated"] = False
         return result
 
     result["status"] = "success"

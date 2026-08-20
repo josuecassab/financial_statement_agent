@@ -108,22 +108,15 @@ def process_pdf_statement(
     #     detail = parsed.get("message") or parsed.get("reason", "unknown")
     #     raise RuntimeError(f"Failed to parse agent response: {detail}")
 
-    agent_bank = {
-        "nubank_agent": "nubank",
-        "bancolombia_agent": "bancolombia",
-        "generic_agent": "otro_banco",
-    }
-    bank = (
-        parsed.get("banco")
-        or agent_bank.get(parsed.get("agent"), "unknown")
-    )
+    codigo = parsed.get("codigo", 0)
+    print(parsed.get("banco"))
 
     df = pd.DataFrame(parsed["movements"])
     df = df[["fecha", "descripcion", "valor"]].copy()
     df["valor"] = df["valor"].astype("float64")
     df["fecha"] = pd.to_datetime(df["fecha"])
     df["fecha"] = df["fecha"].dt.date
-    df["banco"] = bank
+    df["banco"] = codigo
     df.insert(0, "id", pd.RangeIndex(start=1, stop=len(df) + 1))
     df.columns = ["id", "date", "description", "amount", "bank"]
     return df

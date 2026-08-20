@@ -35,6 +35,10 @@ class GenericSchema(BaseModel):
     saldo_anterior: float = Field(description="Saldo anterior del extracto")
     saldo_actual: float = Field(description="Saldo actual del extracto")
 
+class RoutingResult(BaseModel):
+    codigo: int = Field(description="Código de la entidad bancaria")
+    denominacion: str = Field(description="Denominación social de la entidad bancaria")
+
 def get_bank_codes() -> list[dict]:
     with open(BANK_CODES_PATH, "r") as f:
         return json.load(f)
@@ -101,14 +105,14 @@ routing_agent = LlmAgent(
     description="Identifica el tipo de documento y decide si es un extracto bancario de Nubank, Bancolombia o otro banco",
     instruction="""
 Identifica el tipo de documento y decide si es un extracto bancario de Nubank, Bancolombia o otro banco.
-usa la herramienta get_bank_codes para obtener la lista de entidades bancarias.
-responde con el condigo y la denominación social de la entidad bancaria.
-Si es una plataforma fintech o billetera digital, responde con (0, "otro_banco").
-Si no es un extracto bancario, responde con (0, "no_bancario").
+Usa la herramienta get_bank_codes para obtener la lista de entidades bancarias.
+Responde con el código y la denominación social de la entidad bancaria.
+Si es una plataforma fintech o billetera digital, responde con codigo 0 y denominacion "nombre billetera o plataforma fintech".
+Si no es un extracto bancario, responde con codigo 0 y denominacion "no_bancario".
 Ejemplo:
-(1, "Banco de Bogotá S.A.")
+{"codigo": 1, "denominacion": "Banco de Bogotá S.A."}
 """,
-    output_schema=tuple[int, str],
+    output_schema=RoutingResult,
     model=ROOT_AGENT_MODEL,
     tools=[get_bank_codes],
 )
@@ -123,7 +127,10 @@ def _statement_payload(statement, *, code: int, bank_name: str) -> dict:
 @node(rerun_on_resume=True)
 async def code_workflow(ctx: Context, node_input: types.Content):
     # Must accept Content (not str) so PDF/inline_data is not stripped by ADK.
-    code, bank_name = await ctx.run_node(routing_agent, node_input)
+    routing = await ctx.run_node(routing_agent, node_input)
+    if isinstance(routing, dict):
+        routing = RoutingResult.model_validate(routing)
+    code, bank_name = routing.codigo, routing.denominacion
     if code == 128:
         data = await ctx.run_node(nubank_agent, node_input)
         validation_result = await ctx.run_node(statement_validation_function, data)
@@ -138,20 +145,14 @@ async def code_workflow(ctx: Context, node_input: types.Content):
             "data": _statement_payload(bancolombia_statement, code=code, bank_name=bank_name),
             "message": "los movimientos concuerdan con el saldo" if validation_result else "los movimientos no concuerdan con el saldo",
         }
-    elif code not in [0, 128, 7]:
-        cnt = 0
-        validation_result = False
-        while not validation_result and cnt < 2:
-            generic_statement = await ctx.run_node(generic_agent, node_input)
-            validation_result = await ctx.run_node(statement_validation_function, generic_statement)
-            cnt += 1
-
+    elif code == 0 and bank_name == "no_bancario":
+        return {"data": None, "message": "No es un extracto bancario"}
+    else:
+        generic_statement = await ctx.run_node(generic_agent, node_input)
         return {
             "data": _statement_payload(generic_statement, code=code, bank_name=bank_name),
-            "message": "los movimientos concuerdan con el saldo" if validation_result else f"los movimientos no concuerdan con el saldo, se intentó {cnt} veces",
+            "message": "plataforma fintech o billetera digital los saldos no se validaron",
         }
-    else:
-        return {"data": None, "message": "No es un extracto bancario"}
 
 
 root_agent = Workflow(

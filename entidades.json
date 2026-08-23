@@ -1,242 +1,252 @@
 [
   {
-    "codigo": 1,
-    "denominacion_social": "Banco de Bogotá S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 1,
+    "legal_name": "Banco de Bogotá S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 2,
-    "denominacion_social": "Banco Popular S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 2,
+    "legal_name": "Banco Popular S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 6,
-    "denominacion_social": "Itaú Colombia S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 6,
+    "legal_name": "Itaú Colombia S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 7,
-    "denominacion_social": "Bancolombia S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 7,
+    "legal_name": "Bancolombia S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 9,
-    "denominacion_social": "Citibank - Colombia",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 9,
+    "legal_name": "Citibank - Colombia",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 12,
-    "denominacion_social": "BANCO GNB SUDAMERIS S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 12,
+    "legal_name": "BANCO GNB SUDAMERIS S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 13,
-    "denominacion_social": "Banco Bilbao Vizcaya Argentaria Colombia S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 13,
+    "legal_name": "Banco Bilbao Vizcaya Argentaria Colombia S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 23,
-    "denominacion_social": "Banco de Occidente",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 23,
+    "legal_name": "Banco de Occidente",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 30,
-    "denominacion_social": "BANCO CAJA SOCIAL S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 30,
+    "legal_name": "BANCO CAJA SOCIAL S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 39,
-    "denominacion_social": "Banco Davivienda S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 39,
+    "legal_name": "Banco Davivienda S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 42,
-    "denominacion_social": "DAVIBANK S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 42,
+    "legal_name": "DAVIBANK S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 43,
-    "denominacion_social": "BANCO AGRARIO DE COLOMBIA S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 43,
+    "legal_name": "BANCO AGRARIO DE COLOMBIA S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 49,
-    "denominacion_social": "Banco Comercial AV Villas S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 49,
+    "legal_name": "Banco Comercial AV Villas S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 51,
-    "denominacion_social": "BANCIEN S.A. y/o BAN100 S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 51,
+    "legal_name": "BANCIEN S.A. y/o BAN100 S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 52,
-    "denominacion_social": "Bancamía S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 52,
+    "legal_name": "Bancamía S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 53,
-    "denominacion_social": "Banco W S.A",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 53,
+    "legal_name": "Banco W S.A",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 54,
-    "denominacion_social": "Banco Coomeva S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 54,
+    "legal_name": "Banco Coomeva S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 55,
-    "denominacion_social": "Banco Finandina S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 55,
+    "legal_name": "Banco Finandina S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 56,
-    "denominacion_social": "Banco Falabella S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 56,
+    "legal_name": "Banco Falabella S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 57,
-    "denominacion_social": "Banco Pichincha S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 57,
+    "legal_name": "Banco Pichincha S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 58,
-    "denominacion_social": "COOPCENTRAL",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 58,
+    "legal_name": "COOPCENTRAL",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 59,
-    "denominacion_social": "BANCO SANTANDER COLOMBIA S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 59,
+    "legal_name": "BANCO SANTANDER COLOMBIA S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 60,
-    "denominacion_social": "BANCO MUNDO MUJER S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 60,
+    "legal_name": "BANCO MUNDO MUJER S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 62,
-    "denominacion_social": "Mibanco S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 62,
+    "legal_name": "Mibanco S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 63,
-    "denominacion_social": "BANCO SERFINANZA S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 63,
+    "legal_name": "BANCO SERFINANZA S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 64,
-    "denominacion_social": "BANCO J.P. MORGAN COLOMBIA S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 64,
+    "legal_name": "BANCO J.P. MORGAN COLOMBIA S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 65,
-    "denominacion_social": "Lulo Bank S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 65,
+    "legal_name": "Lulo Bank S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 66,
-    "denominacion_social": "Banco BTG Pactual Colombia S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 66,
+    "legal_name": "Banco BTG Pactual Colombia S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 67,
-    "denominacion_social": "BANCO UNIÓN S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 67,
+    "legal_name": "BANCO UNIÓN S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 68,
-    "denominacion_social": "BANCO CONTACTAR S.A.",
-    "tipo": "ESTABLECIMIENTOS BANCARIOS"
+    "code": 68,
+    "legal_name": "BANCO CONTACTAR S.A.",
+    "type": "ESTABLECIMIENTOS BANCARIOS"
   },
   {
-    "codigo": 26,
-    "denominacion_social": "Compañía de Financiamiento TUYA S.A.",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 26,
+    "legal_name": "Compañía de Financiamiento TUYA S.A.",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 31,
-    "denominacion_social": "GM FINANCIAL COLOMBIA S.A. COMPAÑÍA DE FINANCIAMIENTO",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 31,
+    "legal_name": "GM FINANCIAL COLOMBIA S.A. COMPAÑÍA DE FINANCIAMIENTO",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 46,
-    "denominacion_social": "Coltefinanciera S.A. Compañía de Financiamiento",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 46,
+    "legal_name": "Coltefinanciera S.A. Compañía de Financiamiento",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 108,
-    "denominacion_social": "IRIS CF - COMPAÑÍA DE FINANCIAMIENTO S.A.",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 108,
+    "legal_name": "IRIS CF - COMPAÑÍA DE FINANCIAMIENTO S.A.",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 117,
-    "denominacion_social": "Credifamilia Compañía de Financiamiento S.A.",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 117,
+    "legal_name": "Credifamilia Compañía de Financiamiento S.A.",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 118,
-    "denominacion_social": "Crezcamos S.A. Compañía de Financiamiento",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 118,
+    "legal_name": "Crezcamos S.A. Compañía de Financiamiento",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 120,
-    "denominacion_social": "La Hipotecaria Compañía de Financiamiento S.A.",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 120,
+    "legal_name": "La Hipotecaria Compañía de Financiamiento S.A.",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 121,
-    "denominacion_social": "FINANCIERA JURISCOOP S.A. COMPAÑÍA DE FINANCIAMIENTO",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 121,
+    "legal_name": "FINANCIERA JURISCOOP S.A. COMPAÑÍA DE FINANCIAMIENTO",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 122,
-    "denominacion_social": "RCI COLOMBIA S.A. COMPAÑÍA DE FINANCIAMIENTO",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 122,
+    "legal_name": "RCI COLOMBIA S.A. COMPAÑÍA DE FINANCIAMIENTO",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 123,
-    "denominacion_social": "BANCAR TECNOLOGÍA CO S.A. COMPAÑÍA DE FINANCIAMIENTO",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 123,
+    "legal_name": "BANCAR TECNOLOGÍA CO S.A. COMPAÑÍA DE FINANCIAMIENTO",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 124,
-    "denominacion_social": "RAPPIPAY COMPAÑÍA DE FINANCIAMIENTO S.A.",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 124,
+    "legal_name": "RAPPIPAY COMPAÑÍA DE FINANCIAMIENTO S.A.",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 126,
-    "denominacion_social": "MercadoPago S.A. Compañía de Financiamiento",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 126,
+    "legal_name": "MercadoPago S.A. Compañía de Financiamiento",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 127,
-    "denominacion_social": "Bold CF Compañía de Financiamiento S.A.",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 127,
+    "legal_name": "Bold CF Compañía de Financiamiento S.A.",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 128,
-    "denominacion_social": "NU COLOMBIA COMPAÑÍA DE FINANCIAMIENTO S.A.",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 128,
+    "legal_name": "NU",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 129,
-    "denominacion_social": "KOA COMPAÑÍA DE FINANCIAMIENTO S.A.",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 129,
+    "legal_name": "KOA COMPAÑÍA DE FINANCIAMIENTO S.A.",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 130,
-    "denominacion_social": "NEQUI S.A. COMPAÑÍA DE FINANCIAMIENTO",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 130,
+    "legal_name": "NEQUI S.A. COMPAÑÍA DE FINANCIAMIENTO",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 131,
-    "denominacion_social": "ADDI S.A. COMPAÑÍA DE FINANCIAMIENTO",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 131,
+    "legal_name": "ADDI S.A. COMPAÑÍA DE FINANCIAMIENTO",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
   },
   {
-    "codigo": 132,
-    "denominacion_social": "PLATA S.A. COMPAÑÍA DE FINANCIAMIENTO",
-    "tipo": "COMPAÑÍAS DE FINANCIAMIENTO"
+    "code": 132,
+    "legal_name": "PLATA S.A. COMPAÑÍA DE FINANCIAMIENTO",
+    "type": "COMPAÑÍAS DE FINANCIAMIENTO"
+  },
+  {
+    "code": 1000,
+    "legal_name": "Plenti",
+    "type": "fintech"
+  },
+  {
+    "code": 1001,
+    "legal_name": "Peoplepass",
+    "type": "fintech"
   }
 ]

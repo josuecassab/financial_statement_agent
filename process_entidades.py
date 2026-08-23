@@ -52,7 +52,7 @@ DENOMINACION_SOCIAL_BY_CODIGO = {
     124: "RAPPIPAY COMPAÑÍA DE FINANCIAMIENTO S.A.",
     126: "MercadoPago S.A. Compañía de Financiamiento",
     127: "Bold CF Compañía de Financiamiento S.A.",
-    128: "NU COLOMBIA COMPAÑÍA DE FINANCIAMIENTO S.A.",
+    128: "NU",
     129: "KOA COMPAÑÍA DE FINANCIAMIENTO S.A.",
     130: "NEQUI S.A. COMPAÑÍA DE FINANCIAMIENTO",
     131: "ADDI S.A. COMPAÑÍA DE FINANCIAMIENTO",
@@ -62,83 +62,152 @@ DENOMINACION_SOCIAL_BY_CODIGO = {
 SOURCES = (
     {
         "path": BASE_DIR / "1_entidades_bcos.xls",
-        "tipo": "ESTABLECIMIENTOS BANCARIOS",
+        "type": "ESTABLECIMIENTOS BANCARIOS",
+        "format": "superintendencia",
     },
     {
         "path": BASE_DIR / "4_entidades_comfin.xls",
-        "tipo": "COMPAÑÍAS DE FINANCIAMIENTO",
+        "type": "COMPAÑÍAS DE FINANCIAMIENTO",
+        "format": "superintendencia",
+    },
+    {
+        "path": BASE_DIR / "5_fintechs.xlsx",
+        "type": "FINTECH",
+        "format": "flat",
     },
 )
 
 
 def _find_header(df: pd.DataFrame) -> tuple[int, int, int]:
-    """Return (header_row, codigo_col, denominacion_col)."""
+    """Return (header_row, code_col, legal_name_col)."""
     for row_idx, row in df.iterrows():
         values = ["" if pd.isna(value) else str(value).strip() for value in row.tolist()]
         lower = [value.lower() for value in values]
         if any(value == "código" for value in lower) and any(
             "denominación social" in value for value in lower
         ):
-            codigo_col = next(i for i, value in enumerate(lower) if value == "código")
-            denominacion_col = next(
+            code_col = next(i for i, value in enumerate(lower) if value == "código")
+            legal_name_col = next(
                 i for i, value in enumerate(lower) if "denominación social" in value
             )
-            return int(row_idx), codigo_col, denominacion_col
+            return int(row_idx), code_col, legal_name_col
     raise ValueError("Could not find 'Código' and 'Denominación social de la Entidad' columns")
 
 
-def extract_entities(path: Path, tipo: str) -> pd.DataFrame:
-    df = pd.read_excel(path, sheet_name=0, header=None, engine="xlrd")
-    header_idx, codigo_col, denominacion_col = _find_header(df)
-
-    entities = df.iloc[header_idx + 1 :, [codigo_col, denominacion_col]].copy()
-    entities.columns = ["codigo", "denominacion_social"]
-    entities = entities.dropna(how="any")
-    entities["codigo"] = pd.to_numeric(entities["codigo"], errors="coerce")
-    entities = entities.dropna(subset=["codigo"])
-    entities["codigo"] = entities["codigo"].astype(int)
-    entities["denominacion_social"] = (
-        entities["denominacion_social"]
+def _normalize_name(series: pd.Series) -> pd.Series:
+    cleaned = (
+        series.fillna("")
         .astype(str)
         .str.replace(r"\s+", " ", regex=True)
         .str.strip()
     )
-    entities = entities[entities["denominacion_social"].str.lower() != "nan"]
-    entities["denominacion_social"] = (
-        entities["codigo"]
-        .map(DENOMINACION_SOCIAL_BY_CODIGO)
-        .fillna(entities["denominacion_social"])
+    cleaned = cleaned.mask(cleaned.str.lower() == "nan", "")
+    return cleaned
+
+
+def extract_entities_superintendencia(path: Path, entity_type: str) -> pd.DataFrame:
+    df = pd.read_excel(path, sheet_name=0, header=None, engine="xlrd")
+    header_idx, code_col, legal_name_col = _find_header(df)
+
+    entities = df.iloc[header_idx + 1 :, [code_col, legal_name_col]].copy()
+    entities.columns = ["code", "legal_name"]
+    entities["code"] = pd.to_numeric(entities["code"], errors="coerce")
+    entities["legal_name"] = _normalize_name(entities["legal_name"])
+    # Drop spreadsheet padding: no code and no name.
+    entities = entities[entities["code"].notna() | (entities["legal_name"] != "")]
+    entities["legal_name"] = (
+        entities["code"].map(DENOMINACION_SOCIAL_BY_CODIGO).fillna(entities["legal_name"])
     )
-    entities["tipo"] = tipo
+    entities = entities[entities["legal_name"] != ""]
+    entities["type"] = entity_type
+    entities["code"] = entities["code"].astype("Int64")
     return entities.reset_index(drop=True)
 
 
-def process_entidades(sources: tuple[dict, ...] = SOURCES) -> list[dict]:
-    frames = [extract_entities(source["path"], source["tipo"]) for source in sources]
-    combined = pd.concat(frames, ignore_index=True)
-    return combined.to_dict(orient="records")
+def extract_entities_flat(path: Path, entity_type: str) -> pd.DataFrame:
+    """Read a pre-normalized sheet with code / legal_name / type columns."""
+    df = pd.read_excel(path, sheet_name=0)
+    columns = {str(c).strip().lower(): c for c in df.columns}
+
+    required = ("legal_name",)
+    for name in required:
+        if name not in columns:
+            raise ValueError(f"{path.name}: missing required column '{name}'")
+
+    entities = pd.DataFrame(
+        {
+            "code": pd.to_numeric(df[columns["code"]], errors="coerce")
+            if "code" in columns
+            else pd.NA,
+            "legal_name": _normalize_name(df[columns["legal_name"]]),
+            "type": (
+                _normalize_name(df[columns["type"]])
+                if "type" in columns
+                else entity_type
+            ),
+        }
+    )
+    entities.loc[entities["type"] == "", "type"] = entity_type
+    entities = entities[entities["code"].notna() | (entities["legal_name"] != "")]
+    entities = entities[entities["legal_name"] != ""]
+    entities["code"] = entities["code"].astype("Int64")
+    return entities.reset_index(drop=True)
+
+
+def extract_entities(path: Path, entity_type: str, fmt: str = "superintendencia") -> pd.DataFrame:
+    if fmt == "flat":
+        return extract_entities_flat(path, entity_type)
+    return extract_entities_superintendencia(path, entity_type)
+
+
+def process_entidades(sources: tuple[dict, ...] = SOURCES) -> pd.DataFrame:
+    frames = [
+        extract_entities(
+            source["path"],
+            source["type"],
+            source.get("format", "superintendencia"),
+        )
+        for source in sources
+    ]
+    return pd.concat(frames, ignore_index=True)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Extract entity codes and names from Superintendencia XLS files "
-            "and write a JSON array."
+            "and write JSON or CSV."
         )
     )
     parser.add_argument(
         "-o",
         "--output",
         type=Path,
-        default=BASE_DIR / "entidades.json",
-        help="Output JSON path (default: entidades.json next to this script)",
+        default=None,
+        help="Output path (default: entidades.json or entidades.csv next to this script)",
+    )
+    parser.add_argument(
+        "-f",
+        "--format",
+        choices=("json", "csv"),
+        default="json",
+        help="Output format (default: json)",
     )
     args = parser.parse_args()
 
-    records = process_entidades()
-    payload = json.dumps(records, ensure_ascii=False, indent=2)
-    args.output.write_text(payload + "\n", encoding="utf-8")
-    print(payload)
+    combined = process_entidades()
+    output = args.output or (BASE_DIR / f"entidades.{args.format}")
+
+    # JSON-friendly nulls
+    records = combined.astype(object).where(combined.notna(), None).to_dict(orient="records")
+
+    if args.format == "csv":
+        combined.to_csv(output, index=False)
+        print(combined.to_csv(index=False), end="")
+    else:
+        payload = json.dumps(records, ensure_ascii=False, indent=2)
+        output.write_text(payload + "\n", encoding="utf-8")
+        print(payload)
 
 
 if __name__ == "__main__":

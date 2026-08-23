@@ -106,8 +106,8 @@ routing_agent = LlmAgent(
     instruction="""
 Identifica el tipo de documento y decide si es un extracto bancario de Nubank, Bancolombia o otro banco.
 Usa la herramienta get_bank_codes para obtener la lista de entidades bancarias.
-Responde con el código y la denominación social de la entidad bancaria.
-Si es una plataforma fintech o billetera digital, responde con codigo 0 y denominacion "nombre billetera o plataforma fintech".
+Responde con el código (code) y la denominación social (legal_name) de la entidad bancaria.
+Si es una plataforma fintech o billetera digital que no está en la lista, responde con codigo 0 y denominacion "nombre billetera o plataforma fintech".
 Si no es un extracto bancario, responde con codigo 0 y denominacion "no_bancario".
 Ejemplo:
 {"codigo": 1, "denominacion": "Banco de Bogotá S.A."}

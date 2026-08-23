@@ -20,6 +20,7 @@ class Movimientos(BaseModel):
     fecha: str = Field(description="La fecha del movimiento")
     descripcion: str = Field(description="La descripción del movimiento")
     valor: float = Field(description="El valor del movimiento")
+    moneda: str = Field(description="La moneda del movimiento en formato ISO 4217")
 
 class BankStatement(BaseModel):
     movimientos: list[Movimientos] = Field(
@@ -88,13 +89,13 @@ generic_agent = Agent(
     name="generic_agent",
     description="Agente para extraer datos de un extracto bancario de otro banco.",
     instruction="""Eres un experto en convertir archivos PDF en tablas de datos.
-convierte las  columnas fecha, decripción/concepto, valor, o columnas equivalentes a las anteriores.
-También agrega el saldo actual y el saldo anterior. Si no hay saldo anterior, agregale 0.0.
-
-Convertir la fecha en formato yyyy-mm-dd.
+Extrae de cada movimiento las columnas equivalentes a fecha, descripción (o concepto) y valor.
+Incluye la moneda en formato ISO 4217 (p. ej. COP, USD, BRL).
+También agrega el saldo actual y el saldo anterior. Si no hay saldo anterior, usa 0.0.
+Convierte la fecha a formato yyyy-mm-dd.
 Ejemplo:
-{"movimientos": [{"fecha": "2024-06-15", "descripcion": "...", "valor": 0.0, "saldo": 0.0}],
-x"saldo_anterior": 0.0, "saldo_actual": 0.0}
+{"movimientos": [{"fecha": "2024-06-15", "descripcion": "...", "valor": 0.0, "moneda": "COP"}],
+"saldo_anterior": 0.0, "saldo_actual": 0.0}
 """,
     model=SUB_AGENTS_MODEL,
     output_schema=GenericSchema,

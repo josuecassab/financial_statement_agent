@@ -100,7 +100,7 @@ def process_pdf_statement(
     )
     response.raise_for_status()
     parsed = parse_run_response(response.json())
-    logger.info("Agent parse result: %s", parsed.get("status"))
+    logger.info("Agent parse result: %s", parsed)
 
     if parsed["status"] == "not_financial_statement":
         raise ValueError(parsed.get("reason") or "Document is not a financial statement.")
@@ -112,13 +112,12 @@ def process_pdf_statement(
     print(parsed.get("banco"))
 
     df = pd.DataFrame(parsed["movements"])
-    df = df[["fecha", "descripcion", "valor"]].copy()
     df["valor"] = df["valor"].astype("float64")
     df["fecha"] = pd.to_datetime(df["fecha"])
     df["fecha"] = df["fecha"].dt.date
     df["banco"] = codigo
     df.insert(0, "id", pd.RangeIndex(start=1, stop=len(df) + 1))
-    df.columns = ["id", "date", "description", "amount", "bank"]
+    df.columns = ["id", "date", "description", "amount", "currency", "bank"]
     return df
 
 
@@ -138,6 +137,7 @@ def main() -> None:
     table_stem = upload_name.split(".")[0].replace(" ", "_")
     logger.info("Created statement table for upload: %s (%s rows)", table_stem, len(df))
     print(df.to_string(index=False))
+    df.to_excel(f"{table_stem}.xlsx", index=False)
 
 
 if __name__ == "__main__":

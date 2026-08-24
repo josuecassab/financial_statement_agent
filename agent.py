@@ -61,10 +61,12 @@ nubank_agent = Agent(
     description="Agente para extraer datos de un extracto bancario de Nubank.",
     instruction="""Eres un experto en convertir archivos PDF en tablas de datos.
 Solo convertir la sección de 'Movimientos',
-no se te olvide la última transacción llamada 'Rendimiento total de tu cuenta' y agregale fecha como último día del mes.
+Extrae de cada movimiento las columnas equivalentes a fecha, descripción (o concepto) y valor.
+no se te olvide el ultimo movimiento llamado 'Rendimiento total de tu cuenta' y agregale fecha como último día del mes.
+Incluye la moneda en formato ISO 4217 (p. ej. COP, USD, BRL).
 Convertir la fecha en formato yyyy-mm-dd.
 Ejemplo:
-{"movimientos": [{"fecha": "2024-06-15", "descripcion": "...", "valor": 0.0, "saldo": 0.0}],
+{"movimientos": [{"fecha": "2024-06-15", "descripcion": "...", "valor": 0.0, "moneda": "COP"}],
 "saldo_anterior": 0.0, "saldo_actual": 0.0}
 """,
     model=SUB_AGENTS_MODEL,
@@ -75,10 +77,11 @@ bancolombia_agent = Agent(
     name="bancolombia_agent",
     description="Agente para extraer movimientos de extractos Bancolombia (PDF o Excel).",
     instruction="""Eres un experto en extractos Bancolombia. Debes devolver un objeto JSON con:
-movimientos (fecha yyyy-mm-dd, descripcion, valor, saldo), saldo_anterior y saldo_actual.
-Lee el PDF del contexto y extrae las columnas equivalentes a Fecha, Descripción, Valor y Saldo.
+Lee el PDF del contexto y extrae las columnas equivalentes a Fecha, Descripción, Valor.
+Incluye la moneda en formato ISO 4217 (p. ej. COP, USD, BRL).
+También agrega el saldo actual y el saldo anterior. Si no hay saldo anterior, usa 0.0.
 Ejemplo:
-{"movimientos": [{"fecha": "2024-06-15", "descripcion": "...", "valor": 0.0, "saldo": 0.0}],
+{"movimientos": [{"fecha": "2024-06-15", "descripcion": "...", "valor": 0.0, "moneda": "COP"}],
 "saldo_anterior": 0.0, "saldo_actual": 0.0}
 """,
     model=SUB_AGENTS_MODEL,

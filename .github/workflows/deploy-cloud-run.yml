@@ -4,9 +4,13 @@
 # Required GitHub secret:
 #     GCP_SA_KEY                      JSON key for a deployer SA
 #
-# Optional secrets (merged into the Cloud Run service if set):
+# Optional secrets (passed to Cloud Run with --env if set):
 #     ROOT_AGENT_MODEL
 #     SUB_AGENTS_MODEL
+#
+# ADK sets GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION, and
+# GOOGLE_GENAI_USE_ENTERPRISE on the service. Do not pass --update-env-vars;
+# that flag is reserved by `adk deploy cloud_run`.
 #
 # The deployer SA needs Cloud Run Admin, Service Account User, Cloud Build Editor,
 # Artifact Registry Writer, and Storage Admin (source uploads).
@@ -58,20 +62,20 @@ jobs:
           ROOT_AGENT_MODEL: ${{ secrets.ROOT_AGENT_MODEL }}
           SUB_AGENTS_MODEL: ${{ secrets.SUB_AGENTS_MODEL }}
         run: |
-          UPDATE_ENV="GOOGLE_CLOUD_PROJECT=${PROJECT_ID},GOOGLE_GENAI_USE_VERTEXAI=TRUE"
+          ENV_ARGS=()
           if [ -n "${ROOT_AGENT_MODEL}" ]; then
-            UPDATE_ENV="${UPDATE_ENV},ROOT_AGENT_MODEL=${ROOT_AGENT_MODEL}"
+            ENV_ARGS+=(--env "ROOT_AGENT_MODEL=${ROOT_AGENT_MODEL}")
           fi
           if [ -n "${SUB_AGENTS_MODEL}" ]; then
-            UPDATE_ENV="${UPDATE_ENV},SUB_AGENTS_MODEL=${SUB_AGENTS_MODEL}"
+            ENV_ARGS+=(--env "SUB_AGENTS_MODEL=${SUB_AGENTS_MODEL}")
           fi
 
-          yes | adk deploy cloud_run \
+          adk deploy cloud_run \
             --project="${PROJECT_ID}" \
             --region="${REGION}" \
             --service_name="${SERVICE_NAME}" \
             --app_name="${APP_NAME}" \
+            "${ENV_ARGS[@]}" \
             . \
             -- \
-            --quiet \
-            --update-env-vars="${UPDATE_ENV}"
+            --quiet

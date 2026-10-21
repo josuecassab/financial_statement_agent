@@ -8,9 +8,12 @@
 #     ROOT_AGENT_MODEL
 #     SUB_AGENTS_MODEL
 #
-# ADK sets GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION, and
+# ADK sets GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION (from --region), and
 # GOOGLE_GENAI_USE_ENTERPRISE on the service. Do not pass --update-env-vars;
-# that flag is reserved by `adk deploy cloud_run`.
+# that flag is reserved by `adk deploy cloud_run`. A later --env value wins.
+#
+# gemini-3.8-flash is not published on regional endpoints such as us-east1.
+# Cloud Run stays in us-east1; model calls use the US multi-region endpoint.
 #
 # The deployer SA needs Cloud Run Admin, Service Account User, Cloud Build Editor,
 # Artifact Registry Writer, and Storage Admin (source uploads).
@@ -75,6 +78,7 @@ jobs:
             --region="${REGION}" \
             --service_name="${SERVICE_NAME}" \
             --app_name="${APP_NAME}" \
+            --env "GOOGLE_CLOUD_LOCATION=us" \
             "${ENV_ARGS[@]}" \
             . \
             -- \
